@@ -495,11 +495,6 @@ pmax2 = Vopt2*Topt2;
 %
 % Plot Muscle Velocities and Power versus Muscle Forces
 %
-%
-% Order lines so colors are together
-% Include "Fit" for lines/ "Data" for markers?
-% File name for PDF file/ Combine with spreadsheet name?
-%
 figure('Name','Muscle Velocities and Power','WindowState', ...
        'maximized','NumberTitle','off');
 orient landscape;
