@@ -165,8 +165,8 @@ else
     t = {t};
     mlen = {mlen};
     mfrc = {mfrc};
-    pass = {pass};
-    act = {act};
+    pass = mean(pass);
+    act = mean(act);
     flen = flen*1000;   % Convert mm to um
     fdia1 = fdia*1000;
     fdia2 = fdia*1000;
@@ -413,8 +413,6 @@ mfrc_pass2 = (mfrc_num-pass_avg)./mfrc_den; % Per Mark's spreadsheet
 % Absolute of Normalized Muscle Velocities
 %
 mvel_abs = abs(mvel_step(:));
-Vo = max(mvel_abs);
-% mvel_rel = mvel_norm./Vo;
 %
 % Plot Muscle Velocities versus Muscle Forces
 %
@@ -430,7 +428,8 @@ legend({'Passive force corrected','Per Mark''s spreadsheet'});
 %
 xlabel('Normalized Muscle Force','FontSize',12,'FontWeight','bold');
 ylabel('Muscle Velocity (ML/s)','FontSize',12,'FontWeight','bold');
-title('Muscle Force-Velocity Curve','FontSize',16,'FontWeight','bold');
+title('Muscle Force-Velocity Experimental Data','FontSize',16, ...
+      'FontWeight','bold');
 %
 pause;
 close all;
@@ -473,67 +472,17 @@ velfit2 = hillfun(hill_pars2,mfrc_pass2);
 powfit1 = velfit1.*mfrc_pass1;
 powfit2 = velfit2.*mfrc_pass2;
 %
-mfrc_pass1_rng = sort([-mfrc_pass1; mfrc_pass1]);
-mfrc_pass1_rng = mfrc_pass1_rng(mfrc_pass1_rng>-1);   % Plot range
+mfrc_max = max([mfrc_pass1; mfrc_pass2]);
 %
-mfrc_pass2_rng = sort([-mfrc_pass2; mfrc_pass2]);
-mfrc_pass2_rng = mfrc_pass2_rng(mfrc_pass2_rng>-1);   % Plot range
+mfrc_rng = -0.07:0.01:mfrc_max;        % Plot range
 %
-velfitplt1 = hillfun(hill_pars1,mfrc_pass1_rng); % Velocities for plot
-velfitplt2 = hillfun(hill_pars2,mfrc_pass2_rng); % Velocities for plot
+velfitplt1 = hillfun(hill_pars1,mfrc_rng);  % Velocities for plot
+velfitplt2 = hillfun(hill_pars2,mfrc_rng);  % Velocities for plot
 %
-% Plot Muscle Velocities and Power versus Muscle Forces for Negative
-% Range
+powfitplt1 = velfitplt1.*mfrc_rng;     % Power for plot
+powfitplt2 = velfitplt2.*mfrc_rng;     % Power for plot
 %
-figure('Name','Muscle Velocities and Power','WindowState', ...
-       'maximized','NumberTitle','off');
-orient landscape;
-%
-ha = axes;
-yyaxis left;
-ha.YColor = 'k';        % Left Y-axis color is black
-plot(mfrc_pass1,mvel_abs,'go','LineWidth',1,'MarkerSize',7);
-hold on;
-plot(mfrc_pass2,mvel_abs,'rx','LineWidth',1,'MarkerSize',7);
-plot(0,vmax1,'gs','MarkerFaceColor','g','LineWidth',1,'MarkerSize',7);
-plot(0,vmax2,'rs','MarkerFaceColor','r','LineWidth',1,'MarkerSize',7);
-plot(mfrc_pass1_rng,velfitplt1,'g-','LineWidth',1);
-plot(mfrc_pass2_rng,velfitplt2,'r-','LineWidth',1);
-%
-xlabel('Normalized Muscle Force','FontSize',12,'FontWeight','bold');
-ylabel('Muscle Velocity (ML/s)','FontSize',12,'FontWeight','bold');
-%
-ha = gca;
-ha.YLim = [-0.1 1.07*max([mvel_abs; vmax1; vmx2])];
-%
-[mfrc_pass1s,ids1] = sort(mfrc_pass1); % Sort muscle forces for plot
-[mfrc_pass2s,ids2] = sort(mfrc_pass2); % Sort muscle forces for plot
-%
-yyaxis right;
-ha.YColor = 'k';        % Right Y-axis color is black
-plot(mfrc_pass1s,pow1(ids1),'bv','LineWidth',1,'MarkerSize',7);
-hold on;
-plot(mfrc_pass2s,pow2(ids2),'m^','LineWidth',1,'MarkerSize',7);
-plot(mfrc_pass1s,powfit1(ids1),'b-','LineWidth',1);
-plot(mfrc_pass2s,powfit2(ids2),'m-','LineWidth',1);
-%
-legend({'Passive force corrected';'Per Mark''s spreadsheet'; ...
-        'Maximum velocity passive'; 'Maximum velocity per Mark''s'; ...
-        'Passive force corrected fit';'Per Mark''s spreadsheet fit'; ...
-        'Power passive force corrected'; ...
-        'Power per Mark''s spreadsheet'; ...
-        'Power passive force corrected fit'; ...
-        'Power per Mark''s spreadsheet fit'});
-%
-ylabel('Normalized Power (ML/s)','FontSize',12,'FontWeight','bold');
-%
-pause;
-close all;
-%
-% Calculate Additional Output Parameters
-%
-Vo_norm1 = Vo/vmax1;
-Vo_norm2 = Vo/vmax2;
+% Calculate Additional Parameters
 %
 Vopt1 = Hill_b1*sqrt((1/Hill_a1)+1)-Hill_b1;
 Vopt2 = Hill_b2*sqrt((1/Hill_a2)+1)-Hill_b2;
@@ -544,6 +493,89 @@ Topt2 = sqrt(Hill_a2.^2+Hill_a2)-Hill_a2;
 pmax1 = Vopt1*Topt1;
 pmax2 = Vopt2*Topt2;
 %
+% Plot Muscle Velocities and Power versus Muscle Forces
+%
+%
+% Order lines so colors are together
+% Include "Fit" for lines/ "Data" for markers?
+% File name for PDF file/ Combine with spreadsheet name?
+%
+figure('Name','Muscle Velocities and Power','WindowState', ...
+       'maximized','NumberTitle','off');
+orient landscape;
+%
+ha = axes;
+yyaxis left;
+ha.YColor = 'k';        % Left Y-axis color is black
+ymax = 1.1*max([mvel_abs; vmax1; vmax2]);
+h0 = plot([0 0],[-0.1 ymax],'k:','LineWidth',1); % X = 0 (zero) axis line
+hold on;
+%
+plot(mfrc_pass1,mvel_abs,'go','LineWidth',1,'MarkerSize',7);
+plot(0,vmax1,'gs','MarkerFaceColor','g','LineWidth',1,'MarkerSize',7);
+plot(mfrc_rng,velfitplt1,'g-','LineWidth',1);
+plot(mfrc_pass2,mvel_abs,'rx','LineWidth',1,'MarkerSize',8);
+plot(0,vmax2,'rs','MarkerFaceColor','r','LineWidth',1,'MarkerSize',7);
+plot(mfrc_rng,velfitplt2,'r-','LineWidth',1);
+%
+xlabel('Normalized Muscle Force','FontSize',12,'FontWeight','bold');
+ylabel('Muscle Velocity (ML/s)','FontSize',12,'FontWeight','bold');
+%
+ha.YLim = [-0.1 ymax];
+%
+yyaxis right;
+ha.YColor = 'k';        % Right Y-axis color is black
+plot(mfrc_pass1,pow1,'bv','LineWidth',1,'MarkerSize',7);
+hold on;
+plot(Topt1,pmax1,'bs','MarkerFaceColor','b','LineWidth',1, ...
+     'MarkerSize',7);
+plot(mfrc_rng,powfitplt1,'b-','LineWidth',1);
+plot(mfrc_pass2,pow2,'m^','LineWidth',1,'MarkerSize',7);
+plot(Topt2,pmax2,'ms','MarkerFaceColor','m','LineWidth',1, ...
+     'MarkerSize',7);
+plot(mfrc_rng,powfitplt2,'m-','LineWidth',1);
+%
+legend({''; 'Passive force corrected';  ...
+        'Maximum velocity passive'; 'Passive force corrected fit'; ...
+        'Per Mark''s spreadsheet'; 'Maximum velocity per Mark''s'; ...
+        'Per Mark''s spreadsheet fit'; ...
+        'Power passive force corrected'; 'Maximum power passive'; ...
+        'Power passive force corrected fit'; ...
+        'Power per Mark''s spreadsheet'; ...
+        'Maximum power per Mark''s'; ...
+        'Power per Mark''s spreadsheet fit'},'Location','southwest', ...
+        'FontSize',8);
+%
+ylabel('Normalized Power (ML/s)','FontSize',12,'FontWeight','bold');
+ttxt = {'Hill Muscle Model Fit of Experimental Data'; ...
+        'with Two Passive Muscle Force Corrections'};
+title(ttxt,'FontSize',16,'FontWeight','bold');
+%
+pause;
+%
+% Get File Names for Output Spreadsheet File and PDF File
+%
+if iscell(fnam)
+  xlsnam = fnam{1};     % New output PDF/spreadsheet file name
+else
+  xlsnam = fnam;        % New output PDF/spreadsheet file name
+end
+%
+idot = strfind(xlsnam,'.');            % Find "dots" in file name
+xlsnam = xlsnam(1:idot(end));          % Remove file extension
+%
+pdfnam = [xlsnam 'pdf'];               % New output PDF file name
+pdfnam = fullfile(pnam,pdfnam);        % New output PDF file name with path
+%
+xlsnam = [xlsnam 'xlsx'];
+xlsnam = fullfile(pnam,xlsnam);        % New output spreadsheet file name
+%
+% Save Plot to a PDF File
+%
+print('-dpdf','-r600','-fillpage',pdfnam);
+%
+close all;
+%
 % Combine Parameters and Results
 %
 % pow_all = [pow1 pow2];
@@ -551,14 +583,14 @@ Hill_a_all = [Hill_a1; Hill_a2];
 Hill_b_all = [Hill_b1; Hill_b2];
 R2_all = [R2_1; R2_2];
 vmax_all = [vmax1; vmax2];
-Vo_norm_all = [Vo_norm1; Vo_norm2];
 pmax_all = [pmax1; pmax2];
 Vopt_all = [Vopt1; Vopt2];
 Topt_all = [Topt1; Topt2];
 %
 % Create Array of Data and Results
 %
-dat1 = [vstep(:) mfrc_rel mfrc_pass2 mvel_abs pow1 velfit1 powfit1];
+dat1 = [vstep(:) mfrc_rel mfrc_pass1 mfrc_pass2 mvel_abs pow1 ...
+        velfit1 powfit1];
 nr = size(dat1,1);
 %
 mdata1 = NaN(nr-nv,1);  % NaNs (missing data) to fill arrays
@@ -571,8 +603,8 @@ mdata3 = NaN(nr-2,5);   % NaNs (missing data) to fill arrays
 dat3 = [[act_max; act_max] Hill_b_all Hill_a_all R2_all vmax_all];
 dat3 = [dat3; mdata3];
 %
-dat4 = [Vo_norm_all pmax_all Vopt_all Topt_all [Vo; Vo]];
-dat4 = [dat4; mdata3];
+dat4 = [pmax_all Vopt_all Topt_all];
+dat4 = [dat4; mdata3(:,1:3)];
 %
 dat = [dat1 dat2 dat3 dat4];           % Array of data and results
 %
@@ -591,10 +623,8 @@ nf = size(fnam,1);
 %
 if iscell(fnam)
   datf = [fnam; repmat({' '},nr-nf,1)];
-  xlsnam = fnam{1};     % New output spreadsheet file name
 else
   datf = [cellstr(fnam); repmat({' '},nr-nf,1)];
-  xlsnam = fnam;        % New output spreadsheet file name
 end
 %
 % Create Table of Data and Results
@@ -605,16 +635,17 @@ hdr0 = {'Fiber length (um)','Top width (um)','Side width (um)', ...
 
 hdr1 = {'Target Stress (percent Tmax)', ...
         'Actual Stress (fraction Tmax)', ...
-        'Actual Stress - Passive (fraction Tmax)', ...
+        'Actual Stress - Passive1 (fraction Tmax)', ...
+        'Actual Stress - Passive2 (fraction Tmax)', ...
         'Velocity (ML/s)','Power (ML/s x fraction Tmax)'};
 hdr2 = {'Fit Velocity (ML/s)','Fit Power (ML/s x fraction Tmax)', ...
         'Passive Tension (mM/mm2)', ...
         'Average Passive Tension (mM/mm2)'};
 hdr3 = {'Force Clamp Tension (mM/mm2)','Force Clamp Tmax (mM/mm2)', ...
-        'b (ML/s)','a','Rsquare','Vmax (ML/s)','Vo/Vmax', ...
+        'b (ML/s)','a','Rsquare','Vmax (ML/s)', ...
         'Pmax (ML/s x fraction Tmax)','Vopt (ML/s)','Topt/Tmax'};
 
-hdrs = [hdr0 hdr1 hdr2 hdr3 'Vo (ML/s)'];
+hdrs = [hdr0 hdr1 hdr2 hdr3];
 %
 t1 = array2table(datf,'VariableNames',{'Filename'});
 t2 = array2table(dat,'VariableNames',hdrs);
@@ -628,11 +659,6 @@ newfile = logical(2-menu({'Create a new spreadsheet file or'; ...
                   'Existing file'));
 %
 if newfile
-%
-  idot = strfind(xlsnam,'.');          % Find "dots" in file name
-  xlsnam = xlsnam(1:idot(end));        % Remove file extension
-  xlsnam = [xlsnam 'xlsx'];
-  xlsnam = fullfile(pnam,xlsnam);      % New output spreadsheet file name
 %
   repfile = true;
   if exist(xlsnam,'file')
