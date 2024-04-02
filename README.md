@@ -15,8 +15,8 @@ forces using two different methods.  A Hill's equation model is
 used to fit the muscle velocities and forces.
 
 Plots of the muscle velocity and muscle power with muscle
-force are plotted for review before saving the data and fit
-parameters to a MS-Excel spreadsheet.
+force are plotted for review before saving the plot to a PDF file,
+and the data and fit parameters to a MS-Excel spreadsheet.
 
 The user selects whether to create a new spreadsheet file or
 append to an user selected existing spreadsheet file.
