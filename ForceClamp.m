@@ -671,8 +671,8 @@ if newfile
                'WriteVariableNames',false,'WriteMode','replacefile');
   end
 %
-writetable(t,xlsnam,'Sheet','Summary','WriteVariableNames',false, ...
-           'WriteMode','append');
+  writetable(t,xlsnam,'Sheet','Summary','WriteVariableNames',false, ...
+             'WriteMode','append');
 %
 else                    % Append to an existing file
 %
