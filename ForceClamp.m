@@ -637,13 +637,18 @@ hdr2 = {'Fit Velocity (ML/s)','Fit Power (ML/s x fraction Tmax)', ...
         'Passive Tension (mM/mm2)', ...
         'Average Passive Tension (mM/mm2)'};
 hdr3 = {'Force Clamp Tension (mM/mm2)','Force Clamp Tmax (mM/mm2)', ...
-        'b (ML/s)','a','Rsquare','Vmax (ML/s)', ...
+        'b (ML/s)  ','a          ','Rsquare','Vmax (ML/s)', ...
         'Pmax (ML/s x fraction Tmax)','Vopt (ML/s)','Topt/Tmax'};
-
-hdrs = [hdr0 hdr1 hdr2 hdr3];
+%         'b (ML/s)','a','Rsquare','Vmax (ML/s)', ...
+% hdrs = [hdr0 hdr1 hdr2 hdr3];
+hdrs = [{'Filename'} hdr0 hdr1 hdr2 hdr3];
 %
-t1 = array2table(datf,'VariableNames',{'Filename'});
-t2 = array2table(dat,'VariableNames',hdrs);
+% t1 = array2table(datf,'VariableNames',{'Filename'});
+% t2 = array2table(dat,'VariableNames',hdrs);
+%
+t0 = array2table(hdrs);
+t1 = array2table(datf);
+t2 = array2table(dat);
 %
 t = [t1 t2];
 %
@@ -662,11 +667,12 @@ if newfile
   end
 %
   if repfile
-    writetable(t,xlsnam,'Sheet','Summary','WriteMode','replacefile');
-  else
-    writetable(t,xlsnam,'Sheet','Summary','WriteVariableNames', ...
-               false,'WriteMode','append');
+    writetable(t0,xlsnam,'Sheet','Summary', ...
+               'WriteVariableNames',false,'WriteMode','replacefile');
   end
+%
+writetable(t,xlsnam,'Sheet','Summary','WriteVariableNames',false, ...
+           'WriteMode','append');
 %
 else                    % Append to an existing file
 %
@@ -679,8 +685,8 @@ else                    % Append to an existing file
   end
 %
   xlsnam = fullfile(pnam,fnam);
-  writetable(t,xlsnam,'Sheet','Summary','WriteVariableNames', ...
-             false,'WriteMode','append');
+  writetable(t,xlsnam,'Sheet','Summary', ...
+             'WriteVariableNames',false,'WriteMode','append');
 %
 end
 %
